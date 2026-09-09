@@ -9,3 +9,8 @@
 .externalNativeBuild
 /.idea
 leanote-android-new.jks
+.agents/
+.claude/
+.codex/
+.opencode/
+.pi/
