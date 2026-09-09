@@ -1,0 +1,7 @@
+{"file": "CONTEXT.md", "reason": "Canonical account note attachment and sync cursor semantics"}
+{"file": "docs/adr/0001-incremental-native-android-modernization.md", "reason": "Room data architecture target"}
+{"file": "docs/adr/0003-preserve-data-and-api-contracts-during-migration.md", "reason": "Active data semantics and superseded migration clauses"}
+{"file": "docs/adr/0007-greenfield-client-without-legacy-upgrade.md", "reason": "Fresh Room schema boundary"}
+{"file": ".trellis/tasks/09-09-android-modernization-requirements/research/current-state-evidence.md", "reason": "Pre-migration DBFlow and FTS snapshot"}
+{"file": ".trellis/tasks/09-09-leanote-api-content-compatibility/prd.md", "reason": "Authoritative content identity USN and attachment requirements"}
+{"file": ".trellis/tasks/09-09-leanote-api-content-compatibility/design.md", "reason": "API fixture and canonical content contract design"}

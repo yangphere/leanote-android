@@ -1,0 +1,11 @@
+{"file": "CONTEXT.md", "reason": "Canonical active account sync session and cursor terminology"}
+{"file": "docs/adr/0003-preserve-data-and-api-contracts-during-migration.md", "reason": "USN conflict and attachment contract"}
+{"file": "docs/adr/0004-account-bound-reliable-sync.md", "reason": "Authoritative account-bound sync decision"}
+{"file": "docs/adr/0006-require-valid-https-for-custom-services.md", "reason": "Sync network security boundary"}
+{"file": ".trellis/tasks/09-09-android-modernization-requirements/research/current-state-evidence.md", "reason": "Pre-migration global account and service sync snapshot"}
+{"file": ".trellis/tasks/09-09-room-data-foundation/prd.md", "reason": "Account-scoped Room persistence requirements"}
+{"file": ".trellis/tasks/09-09-room-data-foundation/design.md", "reason": "Room ownership transaction and migration design"}
+{"file": ".trellis/tasks/09-09-leanote-api-content-compatibility/prd.md", "reason": "USN conflict attachment and target service requirements"}
+{"file": ".trellis/tasks/09-09-leanote-api-content-compatibility/design.md", "reason": "Canonical API and content contract design"}
+{"file": ".trellis/tasks/09-09-secure-https-service-connections/prd.md", "reason": "Required network security boundary"}
+{"file": ".trellis/tasks/09-09-secure-https-service-connections/design.md", "reason": "Shared endpoint and TLS validation design"}

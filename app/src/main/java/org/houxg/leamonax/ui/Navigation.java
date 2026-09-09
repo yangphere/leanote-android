@@ -8,10 +8,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner;
 
@@ -443,9 +444,8 @@ public class Navigation {
         if (!TextUtils.isEmpty(account.getAvatar())) {
             Glide.with(mActivity)
                     .load(account.getAvatar())
-                    .centerCrop()
-                    .placeholder(mAlphabetDrawable)
-                    .bitmapTransform(new CropCircleTransformation(mActivity))
+                    .apply(RequestOptions.bitmapTransform(new CropCircleTransformation())
+                            .placeholder(mAlphabetDrawable))
                     .into(mAvatarIv);
         } else {
             mAlphabetDrawable.setAlphabet(account.getEmail());

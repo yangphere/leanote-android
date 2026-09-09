@@ -1,0 +1,35 @@
+{
+  "id": "room-data-foundation",
+  "name": "room-data-foundation",
+  "title": "Room data foundation for fresh installs",
+  "description": "Replace the undeployed DBFlow persistence stack with a Room and Room FTS foundation for fresh installations",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "xiqi",
+  "assignee": "xiqi",
+  "createdAt": "2026-09-09",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-09-android-modernization-requirements",
+  "relatedFiles": [
+    "app/build.gradle",
+    "app/src/main/java/org/houxg/leamonax/database/",
+    "app/src/main/java/org/houxg/leamonax/model/"
+  ],
+  "notes": "Fresh-install Room foundation; DBFlow database migration and legacy snapshots are out of scope.",
+  "meta": {
+    "depends_on": [
+      "09-09-android-platform-baseline",
+      "09-09-leanote-api-content-compatibility"
+    ]
+  }
+}

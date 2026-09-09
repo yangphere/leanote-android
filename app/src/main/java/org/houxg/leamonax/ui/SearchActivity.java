@@ -1,11 +1,12 @@
 package org.houxg.leamonax.ui;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.houxg.leamonax.R;
 import org.houxg.leamonax.utils.DisplayUtils;
@@ -57,9 +58,9 @@ public class SearchActivity extends BaseActivity {
         transaction.add(R.id.container, mNoteFragment);
         transaction.commit();
 
-        ImageView searchCloseIcon = (ImageView) mSearchView.findViewById(android.support.v7.appcompat.R.id.search_close_btn);
+        ImageView searchCloseIcon = (ImageView) mSearchView.findViewById(androidx.appcompat.R.id.search_close_btn);
         searchCloseIcon.setImageResource(R.drawable.ic_clear);
-        final ImageView searchIcon = (ImageView) mSearchView.findViewById(android.support.v7.appcompat.R.id.search_mag_icon);
+        final ImageView searchIcon = (ImageView) mSearchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
         mSearchView.post(new Runnable() {
             @Override
             public void run() {
@@ -67,7 +68,7 @@ public class SearchActivity extends BaseActivity {
                 searchIcon.setVisibility(View.GONE);
             }
         });
-        SearchView.SearchAutoComplete searchAutoComplete = (SearchView.SearchAutoComplete) mSearchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+        TextView searchAutoComplete = mSearchView.findViewById(androidx.appcompat.R.id.search_src_text);
         searchAutoComplete.setHintTextColor(getResources().getColor(R.color.menu_text));
         searchAutoComplete.setTextColor(getResources().getColor(R.color.menu_text));
         mSearchView.setIconified(false);

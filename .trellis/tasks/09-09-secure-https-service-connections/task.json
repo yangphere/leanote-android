@@ -1,0 +1,34 @@
+{
+  "id": "secure-https-service-connections",
+  "name": "secure-https-service-connections",
+  "title": "Secure HTTPS service connections",
+  "description": "Require system-trusted hostname-verified HTTPS for every Leanote service connection",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "xiqi",
+  "assignee": "xiqi",
+  "createdAt": "2026-09-09",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-09-android-modernization-requirements",
+  "relatedFiles": [
+    "app/src/main/java/org/houxg/leamonax/network/ApiProvider.java",
+    "app/src/main/java/org/houxg/leamonax/service/NoteFileService.java",
+    "app/src/main/java/org/houxg/leamonax/network/api/"
+  ],
+  "notes": "TLS remains fail-closed; no trust-all, hostname bypass, plaintext fallback, or embedded credentials.",
+  "meta": {
+    "depends_on": [
+      "09-09-android-platform-baseline"
+    ]
+  }
+}

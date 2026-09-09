@@ -2,13 +2,13 @@ package org.houxg.leamonax.service;
 
 
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
-import android.webkit.MimeTypeMap;
 
 import com.elvishew.xlog.XLog;
 
 import org.bson.types.ObjectId;
+import org.houxg.leamonax.Leamonax;
 import org.houxg.leamonax.R;
 import org.houxg.leamonax.ReadableException;
 import org.houxg.leamonax.database.NoteDataStore;
@@ -160,32 +160,31 @@ public class NoteService {
     }
 
     private static void handleFile(long noteLocalId, List<NoteFile> remoteFiles) {
-        if (CollectionUtils.isEmpty(remoteFiles)) {
-            return;
-        }
-        XLog.i(TAG + "file size=" + remoteFiles.size());
         List<String> excepts = new ArrayList<>();
-        for (NoteFile remote : remoteFiles) {
-            NoteFile local;
-            if (TextUtils.isEmpty(remote.getLocalId())) {
-                local = NoteFileDataStore.getByServerId(remote.getServerId());
-            } else {
-                local = NoteFileDataStore.getByLocalId(remote.getLocalId());
-            }
-            if (local != null) {
-                XLog.i(TAG + "has local file, id=" + remote.getServerId());
+        if (!CollectionUtils.isEmpty(remoteFiles)) {
+            XLog.i(TAG + "file size=" + remoteFiles.size());
+            for (NoteFile remote : remoteFiles) {
+                NoteFile local;
+                if (TextUtils.isEmpty(remote.getLocalId())) {
+                    local = NoteFileDataStore.getByServerId(remote.getServerId());
+                } else {
+                    local = NoteFileDataStore.getByLocalId(remote.getLocalId());
+                }
+                if (local != null) {
+                    XLog.i(TAG + "has local file, id=" + remote.getServerId());
+                } else {
+                    XLog.i(TAG + "need to insert, id=" + remote.getServerId());
+                    local = new NoteFile();
+                    local.setLocalId(new ObjectId().toString());
+                }
                 local.setServerId(remote.getServerId());
-            } else {
-                XLog.i(TAG + "need to insert, id=" + remote.getServerId());
-                local = new NoteFile();
-                local.setLocalId(new ObjectId().toString());
+                local.setNoteId(noteLocalId);
+                local.setIsAttach(remote.isAttach());
+                local.save();
+                excepts.add(local.getLocalId());
             }
-            local.setServerId(remote.getServerId());
-            local.setNoteId(noteLocalId);
-            local.save();
-            excepts.add(local.getLocalId());
         }
-        NoteFileDataStore.deleteExcept(noteLocalId, excepts);
+        deleteManagedFiles(NoteFileDataStore.deleteExcept(noteLocalId, excepts));
     }
 
     private static String convertToLocalImageLinkForRichText(long noteLocalId, String noteContent) {
@@ -381,13 +380,7 @@ public class NoteService {
     @NonNull
     private static List<MultipartBody.Part> handleFileBodies(Note note, Map<String, RequestBody> requestBodyMap) {
         List<MultipartBody.Part> fileBodies = new ArrayList<>();
-        List<String> imageLocalIds;
-        if (note.isMarkDown()) {
-            imageLocalIds = getImagesFromContentForMD(note.getContent());
-        } else {
-            imageLocalIds = getImagesFromContentForRichText(note.getContent());
-        }
-        NoteFileDataStore.deleteExcept(note.getId(), imageLocalIds);
+        pruneUnusedNoteFiles(note);
         List<NoteFile> files = NoteFileDataStore.getAllRelated(note.getId());
         if (CollectionUtils.isNotEmpty(files)) {
             int size = files.size();
@@ -404,6 +397,23 @@ public class NoteService {
             }
         }
         return fileBodies;
+    }
+
+    public static void pruneUnusedNoteFiles(Note note) {
+        List<String> imageLocalIds;
+        if (note.isMarkDown()) {
+            imageLocalIds = getImagesFromContentForMD(note.getContent());
+        } else {
+            imageLocalIds = getImagesFromContentForRichText(note.getContent());
+        }
+        // Attachments are not represented by inline image references, so retain
+        // their relationships while pruning images removed from note content.
+        for (NoteFile noteFile : NoteFileDataStore.getAllRelated(note.getId())) {
+            if (noteFile.isAttach() && !imageLocalIds.contains(noteFile.getLocalId())) {
+                imageLocalIds.add(noteFile.getLocalId());
+            }
+        }
+        deleteManagedFiles(NoteFileDataStore.deleteExcept(note.getId(), imageLocalIds));
     }
 
     private static List<String> getImagesFromContentForRichText(String noteContent) {
@@ -451,13 +461,18 @@ public class NoteService {
     }
 
     public static void deleteNote(Note note) {
+        Long noteLocalId = note.getId();
         if (note.isLocalNote()) {
-            note.delete();
+            if (note.delete() && noteLocalId != null) {
+                deleteManagedFiles(NoteFileDataStore.deleteAllRelated(noteLocalId));
+            }
         } else {
             Call<UpdateRe> call = ApiProvider.getInstance().getNoteApi().delete(note.getNoteId(), note.getUsn());
             UpdateRe response = RetrofitUtils.excuteWithException(call);
             if (response.isOk()) {
-                note.delete();
+                if (note.delete() && noteLocalId != null) {
+                    deleteManagedFiles(NoteFileDataStore.deleteAllRelated(noteLocalId));
+                }
                 updateNoteUsnIfNeed(response.getUsn());
             } else {
                 throw new IllegalStateException(response.getMsg());
@@ -522,23 +537,23 @@ public class NoteService {
         return RequestBody.create(MediaType.parse(MULTIPART_FORM_DATA), content);
     }
 
+    private static void deleteManagedFiles(List<String> paths) {
+        SelectedImageStore store = SelectedImageStore.from(Leamonax.getContext());
+        for (String path : paths) {
+            store.deleteIfManaged(new File(path));
+        }
+    }
+
     private static String getBooleanString(boolean bool) {
         return bool ? TRUE : FALSE;
     }
 
     private static MultipartBody.Part createFilePart(NoteFile noteFile) {
-        File tempFile;
-        try {
-            tempFile = new File(noteFile.getLocalPath());
-            if (!tempFile.isFile()) {
-                XLog.w(TAG + "not a file");
-                return null;
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        String extension = MimeTypeMap.getFileExtensionFromUrl(tempFile.toURI().toString());
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        File tempFile = UploadMimeTypes.requireReadableFile(
+                noteFile.getLocalPath(),
+                noteFile.getLocalId()
+        );
+        String mimeType = UploadMimeTypes.forFileName(tempFile.getName());
         RequestBody fileBody = RequestBody.create(MediaType.parse(mimeType), tempFile);
         return MultipartBody.Part.createFormData(String.format("FileDatas[%s]", noteFile.getLocalId()), tempFile.getName(), fileBody);
     }

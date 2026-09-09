@@ -1,0 +1,38 @@
+{
+  "id": "android-modernization-requirements",
+  "name": "android-modernization-requirements",
+  "title": "Migrate Android modernization requirements to Trellis",
+  "description": "Convert the Android modernization ADR decisions and supersession history into a traceable Trellis parent-child requirement plan",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "xiqi",
+  "assignee": "xiqi",
+  "createdAt": "2026-09-09",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "09-09-android-platform-baseline",
+    "09-09-room-data-foundation",
+    "09-09-leanote-api-content-compatibility",
+    "09-09-account-bound-reliable-sync",
+    "09-09-compose-webview-editor-boundary",
+    "09-09-secure-https-service-connections"
+  ],
+  "parent": null,
+  "relatedFiles": [
+    "CONTEXT.md",
+    "docs/adr/"
+  ],
+  "notes": "Planning-only parent that owns ADR traceability, child-task mapping, and final integration review.",
+  "meta": {
+    "depends_on": []
+  }
+}

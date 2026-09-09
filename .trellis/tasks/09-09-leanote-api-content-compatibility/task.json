@@ -1,0 +1,35 @@
+{
+  "id": "leanote-api-content-compatibility",
+  "name": "leanote-api-content-compatibility",
+  "title": "Leanote API and content compatibility",
+  "description": "Preserve Leanote REST, USN, conflict, Markdown/HTML, and attachment contracts through modernization",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "xiqi",
+  "assignee": "xiqi",
+  "createdAt": "2026-09-09",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-09-android-modernization-requirements",
+  "relatedFiles": [
+    "app/src/main/java/org/houxg/leamonax/network/api/",
+    "app/src/main/java/org/houxg/leamonax/service/NoteService.java",
+    "app/src/main/java/org/houxg/leamonax/service/NoteFileService.java"
+  ],
+  "notes": "Compatibility target is https://me.xiqi.site/ only; test credentials must remain protected.",
+  "meta": {
+    "depends_on": [
+      "09-09-android-platform-baseline",
+      "09-09-secure-https-service-connections"
+    ]
+  }
+}

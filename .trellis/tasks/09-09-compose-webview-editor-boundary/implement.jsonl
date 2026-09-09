@@ -1,0 +1,11 @@
+{"file": "CONTEXT.md", "reason": "Canonical Markdown rich text note and attachment terminology"}
+{"file": "docs/adr/0001-incremental-native-android-modernization.md", "reason": "Compose and incremental slice target"}
+{"file": "docs/adr/0005-compose-shell-with-webview-editor-boundary.md", "reason": "Authoritative editor boundary decision"}
+{"file": "docs/adr/0006-require-valid-https-for-custom-services.md", "reason": "Remote resource HTTPS boundary"}
+{"file": ".trellis/tasks/09-09-android-modernization-requirements/research/current-state-evidence.md", "reason": "Pre-migration Activity WebView and bridge snapshot"}
+{"file": ".trellis/tasks/09-09-android-platform-baseline/research/version-matrix.md", "reason": "Verified Compose Android and runtime baseline"}
+{"file": ".trellis/spec/backend/android-platform-baseline.md", "reason": "Executable platform and insets contract"}
+{"file": ".trellis/tasks/09-09-leanote-api-content-compatibility/prd.md", "reason": "Canonical content attachment and image URL requirements"}
+{"file": ".trellis/tasks/09-09-leanote-api-content-compatibility/design.md", "reason": "Content fixtures and API boundary design"}
+{"file": ".trellis/tasks/09-09-secure-https-service-connections/prd.md", "reason": "Single remote resource HTTPS policy"}
+{"file": ".trellis/tasks/09-09-secure-https-service-connections/design.md", "reason": "Shared endpoint validation and trust design"}

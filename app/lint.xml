@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- Glide bundles NotificationTarget, but this application has no NotificationTarget call site. -->
+    <issue id="NotificationPermission">
+        <ignore regexp="usage from com\.bumptech\.glide\.request\.target\.NotificationTarget" />
+    </issue>
+    <!-- Native crash monitoring is disabled and this exact library is excluded from APK packaging. -->
+    <issue id="Aligned16KB">
+        <ignore regexp="jetified-crashreport-4\.1\.9\.3.*libBugly_Native\.so" />
+    </issue>
+</lint>

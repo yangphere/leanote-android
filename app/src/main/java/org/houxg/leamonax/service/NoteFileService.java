@@ -43,12 +43,37 @@ public class NoteFileService {
         noteFile.setLocalId(new ObjectId().toString());
         noteFile.setLocalPath(filePath);
         noteFile.setIsAttach(false);
-        noteFile.save();
+        if (!noteFile.save()) {
+            SelectedImageStore.from(Leamonax.getContext()).deleteIfManaged(new File(filePath));
+            throw new IllegalStateException("Unable to persist selected image relation");
+        }
         return getLocalImageUri(noteFile.getLocalId());
     }
 
     public static Uri getLocalImageUri(String localId) {
         return new Uri.Builder().scheme(SCHEME).path(IMAGE_PATH).appendQueryParameter("id", localId).build();
+    }
+
+    public static void deleteLocalImage(Uri imageUri) {
+        if (!isLocalImageUri(imageUri)) {
+            throw new IllegalArgumentException("Not a local image URI: " + imageUri);
+        }
+        String localId = imageUri.getQueryParameter("id");
+        NoteFile noteFile = NoteFileDataStore.getByLocalId(localId);
+        if (noteFile == null) {
+            return;
+        }
+        String localPath = noteFile.getLocalPath();
+        if (!noteFile.delete()) {
+            throw new IllegalStateException("Unable to delete local image relation " + localId);
+        }
+        if (!TextUtils.isEmpty(localPath)) {
+            SelectedImageStore store = SelectedImageStore.from(Leamonax.getContext());
+            File file = new File(localPath);
+            if (store.isManaged(file) && !store.deleteIfManaged(file)) {
+                throw new IllegalStateException("Unable to delete managed image " + localId);
+            }
+        }
     }
 
     public static Uri getServerImageUri(String serverId) {

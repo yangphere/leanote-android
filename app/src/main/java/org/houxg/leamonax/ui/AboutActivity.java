@@ -1,13 +1,14 @@
 package org.houxg.leamonax.ui;
 
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.structure.database.transaction.ProcessModelTransaction;
 import com.raizlabs.android.dbflow.structure.database.transaction.Transaction;
+import com.raizlabs.android.dbflow.structure.database.DatabaseWrapper;
 
 import org.bson.types.ObjectId;
 import org.houxg.leamonax.BuildConfig;
@@ -65,8 +66,8 @@ public class AboutActivity extends BaseActivity {
                         ProcessModelTransaction<Note> processModelTransaction = new ProcessModelTransaction.Builder<>(
                                 new ProcessModelTransaction.ProcessModel<Note>() {
                                     @Override
-                                    public void processModel(Note note) {
-                                        note.save();
+                                    public void processModel(Note note, DatabaseWrapper databaseWrapper) {
+                                        note.save(databaseWrapper);
                                     }
                                 })
                                 .addAll(notes)

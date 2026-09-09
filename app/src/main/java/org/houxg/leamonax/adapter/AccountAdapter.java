@@ -1,8 +1,9 @@
 package org.houxg.leamonax.adapter;
 
+import android.annotation.SuppressLint;
 
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import org.houxg.leamonax.R;
 import org.houxg.leamonax.model.Account;
@@ -52,6 +54,7 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.AccountH
     }
 
     @Override
+    @SuppressLint("RecyclerView")
     public void onBindViewHolder(AccountAdapter.AccountHolder holder, int position) {
         if (getItemViewType(position) == TYPE_ADD) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -69,8 +72,7 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.AccountH
             if (!TextUtils.isEmpty(account.getAvatar())) {
                 Glide.with(holder.avatarIv.getContext())
                         .load(account.getAvatar())
-                        .centerCrop()
-                        .bitmapTransform(new CropCircleTransformation(holder.avatarIv.getContext()))
+                        .apply(RequestOptions.bitmapTransform(new CropCircleTransformation()))
                         .into(holder.avatarIv);
             } else {
                 holder.mAlphabetDrawable.setAlphabet(account.getEmail());

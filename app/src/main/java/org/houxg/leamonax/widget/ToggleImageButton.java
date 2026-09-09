@@ -5,12 +5,12 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.Checkable;
-import android.widget.ImageView;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import org.houxg.leamonax.R;
 
 
-public class ToggleImageButton extends ImageView implements Checkable {
+public class ToggleImageButton extends AppCompatImageView implements Checkable {
 
     private boolean mIsChecked = false;
     private Drawable mCheckedDrawable;

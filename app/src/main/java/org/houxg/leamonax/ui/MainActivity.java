@@ -4,9 +4,10 @@ package org.houxg.leamonax.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.Toolbar;
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.Nullable;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.appcompat.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -67,6 +68,17 @@ public class MainActivity extends BaseActivity implements Navigation.Callback {
 
         mNavigation = new Navigation(this);
         mNavigation.init(this, mNavigationView);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (mNavigation.isOpen()) {
+                    mNavigation.close();
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
 
         boolean shouldReload = false;
         if (savedInstanceState == null) {
@@ -130,15 +142,6 @@ public class MainActivity extends BaseActivity implements Navigation.Callback {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         mNavigation.onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mNavigation.isOpen()) {
-            mNavigation.close();
-        } else {
-            super.onBackPressed();
-        }
     }
 
     @OnClick(R.id.fab)

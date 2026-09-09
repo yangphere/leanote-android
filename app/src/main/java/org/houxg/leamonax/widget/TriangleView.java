@@ -5,11 +5,11 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.ImageView;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import org.houxg.leamonax.R;
 
-public class TriangleView extends ImageView {
+public class TriangleView extends AppCompatImageView {
     private static final int DURATION = 200;
     private boolean mIsChecked = false;
     OnToggleListener mListener;

@@ -1,114 +1,159 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-
-    }
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.plugin.compose'
+    id 'com.google.devtools.ksp'
+    id 'com.google.dagger.hilt.android'
 }
-repositories {
-    mavenCentral()
-    jcenter()
-    maven { url "https://www.jitpack.io" }
-    maven { url "http://dl.bintray.com/piasy/maven" }
-}
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 
-def dbflow_version = "4.0.0-beta2"
-def ciName = isEmpty(System.getenv("TRAVIS_TAG")) ? "Staging" : System.getenv("TRAVIS_TAG")
-def ciCode = isEmpty(System.getenv("TRAVIS_BUILD_NUMBER")) ? 1000 : Integer.valueOf(System.getenv("TRAVIS_BUILD_NUMBER"))
-def buglyPrdKey = isEmpty(System.getenv('BUGLY_PRD')) ? "" : System.getenv('BUGLY_PRD')
-def isEmpty(String str) {
-    return str == null || "".equals(str);
+def dbflowVersion = '4.2.4'
+def hiltVersion = '2.60.1'
+def composeBomVersion = '2026.08.00'
+def ciName = isEmpty(System.getenv('TRAVIS_TAG')) ? 'Staging' : System.getenv('TRAVIS_TAG')
+def ciCode = isEmpty(System.getenv('TRAVIS_BUILD_NUMBER')) ? 1000 : Integer.valueOf(System.getenv('TRAVIS_BUILD_NUMBER'))
+def buglyPrdKey = isEmpty(System.getenv('BUGLY_PRD')) ? '' : System.getenv('BUGLY_PRD')
+def releaseKeystore = rootProject.file('leanote-android-new.jks')
+def releaseSigningConfigured = releaseKeystore.isFile() &&
+        !isEmpty(System.getenv('KEY_ALIAS')) &&
+        !isEmpty(System.getenv('KEY_PWD')) &&
+        !isEmpty(System.getenv('KEYSTORE_PWD'))
+
+def isEmpty(String value) {
+    return value == null || value.isEmpty()
 }
 
 android {
-    signingConfigs {
-        config {
-            keyAlias System.getenv('KEY_ALIAS')
-            keyPassword System.getenv('KEY_PWD')
-            storeFile file(projectDir.parentFile.absolutePath + '/leanote-android-new.jks')
-            storePassword System.getenv('KEYSTORE_PWD')
-        }
-    }
-    compileSdkVersion 26
-    buildToolsVersion '28.0.3'
+    namespace 'org.houxg.leamonax'
+    compileSdk 37
+
     defaultConfig {
-        applicationId "com.leanote.android"
-        minSdkVersion 19
-        targetSdkVersion 26
+        applicationId 'com.leanote.android'
+        minSdk 34
+        targetSdk 36
         versionCode ciCode
         versionName ciName
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        buildConfigField "String", "BUGLY_KEY", String.format("\"%s\"", buglyPrdKey)
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        buildConfigField 'String', 'BUGLY_KEY', String.format('"%s"', buglyPrdKey)
     }
 
-    lintOptions {
-        abortOnError false
-    }
-
-    packagingOptions {
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
+    if (releaseSigningConfigured) {
+        signingConfigs {
+            release {
+                keyAlias System.getenv('KEY_ALIAS')
+                keyPassword System.getenv('KEY_PWD')
+                storeFile releaseKeystore
+                storePassword System.getenv('KEYSTORE_PWD')
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (releaseSigningConfigured) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+        compose true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/LICENSE.txt', 'META-INF/NOTICE.txt']
+        }
+        jniLibs {
+            excludes += ['**/libBugly_Native.so']
+        }
+    }
+
+}
+
+def verifyReleaseSigning = tasks.register('verifyReleaseSigning') {
+    doLast {
+        if (!releaseSigningConfigured) {
+            throw new GradleException(
+                    'Release signing requires leanote-android-new.jks and KEY_ALIAS, KEY_PWD, KEYSTORE_PWD.'
+            )
         }
     }
 }
 
+tasks.configureEach {
+    if (name == 'preReleaseBuild') {
+        dependsOn verifyReleaseSigning
+    }
+}
 
 dependencies {
-    api fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    testImplementation 'junit:junit:4.12'
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:support-v4:26.1.0'
-    implementation 'com.android.support:design:26.1.0'
-    implementation 'com.android.support:recyclerview-v7:26.1.0'
-    implementation 'com.android.support:cardview-v7:26.1.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.jakewharton:butterknife:8.4.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.20.0'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0'
+    testImplementation 'joda-time:joda-time:2.14.0'
 
-    implementation group: 'com.squareup.okhttp3', name: 'logging-interceptor', version: '3.4.1'
-    implementation group: 'com.squareup.retrofit2', name: 'adapter-rxjava', version: '2.1.0'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
+    implementation 'androidx.fragment:fragment:1.8.9'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
+    implementation 'androidx.viewpager:viewpager:1.1.0'
+    implementation 'com.google.android.material:material:1.14.0'
 
-    annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
-    implementation "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
-    implementation "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
+    implementation platform("androidx.compose:compose-bom:${composeBomVersion}")
+    implementation 'androidx.activity:activity-compose:1.13.0'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.11.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'
+
+    implementation "com.google.dagger:hilt-android:${hiltVersion}"
+    ksp "com.google.dagger:hilt-compiler:${hiltVersion}"
+
+    implementation 'com.jakewharton:butterknife:10.2.3'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
+
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+    implementation 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
+
+    annotationProcessor "com.github.agrosner.DBFlow:dbflow-processor:${dbflowVersion}"
+    implementation "com.github.agrosner.DBFlow:dbflow-core:${dbflowVersion}"
+    implementation "com.github.agrosner.DBFlow:dbflow:${dbflowVersion}"
 
     implementation 'org.greenrobot:eventbus:3.0.0'
-
     implementation 'io.reactivex:rxandroid:1.2.1'
     implementation 'io.reactivex:rxjava:1.1.9'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
+    implementation 'com.google.code.gson:gson:2.7'
     implementation 'org.mongodb:mongo-java-driver:2.12.4'
 
-    implementation 'com.github.bumptech.glide:glide:3.7.0'
-    implementation 'jp.wasabeef:glide-transformations:2.0.1'
-    implementation 'com.android.support:support-v13:26.1.0'
-    implementation 'com.github.xingstarx:ImageSelector:master-SNAPSHOT'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    implementation 'jp.wasabeef:glide-transformations:4.3.0'
     implementation 'com.facebook.stetho:stetho:1.4.2'
     implementation 'com.facebook.stetho:stetho-okhttp3:1.4.2'
     implementation 'com.github.houxg:FlexLayout:1.2'
 
-    implementation 'net.danlew:android.joda:2.9.5'
-    implementation 'com.tencent.bugly:crashreport_upgrade:latest.release'
+    implementation 'net.danlew:android.joda:2.14.2'
+    implementation 'com.tencent.bugly:crashreport:4.1.9.3'
     implementation 'com.elvishew:xlog:1.3.0'
-    implementation 'com.github.piasy:BigImageViewer:1.2.5'
-    implementation 'com.github.piasy:GlideImageLoader:1.2.5'
+    implementation 'com.github.Piasy.BigImageViewer:BigImageViewer:1.6.7'
+    implementation 'com.github.Piasy.BigImageViewer:GlideImageLoader:1.6.7'
     implementation 'com.weiwangcn.betterspinner:library-material:1.1.0'
-
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
-    testImplementation "org.mockito:mockito-core:2.+"
 }

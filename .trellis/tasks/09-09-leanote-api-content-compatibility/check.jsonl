@@ -1,0 +1,8 @@
+{"file": "CONTEXT.md", "reason": "Canonical note sync content and attachment terminology"}
+{"file": "docs/adr/0003-preserve-data-and-api-contracts-during-migration.md", "reason": "Active server API and content contract clauses"}
+{"file": "docs/adr/0007-greenfield-client-without-legacy-upgrade.md", "reason": "Clarifies server compatibility remains active"}
+{"file": ".trellis/tasks/09-09-android-modernization-requirements/research/current-state-evidence.md", "reason": "Pre-migration REST USN conflict and content snapshot"}
+{"file": ".trellis/tasks/09-09-android-platform-baseline/research/version-matrix.md", "reason": "Verified Android client and build baseline"}
+{"file": ".trellis/spec/backend/android-platform-baseline.md", "reason": "Executable platform contract consumed by API validation"}
+{"file": ".trellis/tasks/09-09-secure-https-service-connections/prd.md", "reason": "Required target service trust boundary"}
+{"file": ".trellis/tasks/09-09-secure-https-service-connections/design.md", "reason": "HTTPS endpoint and validation design"}

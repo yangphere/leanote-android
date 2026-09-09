@@ -1,0 +1,5 @@
+{"file": "CONTEXT.md", "reason": "Leanote service and account terminology"}
+{"file": "docs/adr/0006-require-valid-https-for-custom-services.md", "reason": "Authoritative HTTPS trust decision"}
+{"file": ".trellis/tasks/09-09-android-modernization-requirements/research/current-state-evidence.md", "reason": "Pre-migration trust-all implementation snapshot"}
+{"file": ".trellis/tasks/09-09-android-platform-baseline/research/version-matrix.md", "reason": "Verified Android platform and dependency baseline"}
+{"file": ".trellis/spec/backend/android-platform-baseline.md", "reason": "Executable platform contract consumed by HTTPS migration"}

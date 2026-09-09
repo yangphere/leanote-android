@@ -1,0 +1,34 @@
+{
+  "id": "android-platform-baseline",
+  "name": "android-platform-baseline",
+  "title": "Android platform and delivery baseline",
+  "description": "Establish the Android 14 build and runtime baseline for a fresh public release while preserving the application identity",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "xiqi",
+  "assignee": "xiqi",
+  "createdAt": "2026-09-09",
+  "completedAt": null,
+  "branch": "dev",
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-09-android-modernization-requirements",
+  "relatedFiles": [
+    "build.gradle",
+    "app/build.gradle",
+    "gradle/wrapper/gradle-wrapper.properties",
+    "app/src/main/AndroidManifest.xml"
+  ],
+  "notes": "Fresh-release platform baseline implemented directly on dev; no legacy APK compatibility, PR delivery, or product feature migration.",
+  "meta": {
+    "delivery_mode": "direct",
+    "depends_on": []
+  }
+}

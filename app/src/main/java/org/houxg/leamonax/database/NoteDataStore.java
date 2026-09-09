@@ -93,14 +93,14 @@ public class NoteDataStore {
                 "(select rowid from fts_note where fts_note match ?)";////查询Content中满足条件的记录
         Cursor cursor = databaseWrapper.rawQuery(query, new String[]{Account.getCurrent().getUserId(), "*" + keyword + "*"});
         while(cursor.moveToNext()) {
-            set.add(cursor.getLong(cursor.getColumnIndex("id")));
+            set.add(cursor.getLong(cursor.getColumnIndexOrThrow("id")));
         }
         cursor.close();
 
         query = "select id from note where userid = ? and istrash = 0 and isdeleted = 0 and title like ?";//查询title中满足条件的记录
         cursor = databaseWrapper.rawQuery(query, new String[]{Account.getCurrent().getUserId(), "%" + keyword + "%"});//查询Content中满足条件的记录
         while(cursor.moveToNext()) {
-            set.add(cursor.getLong(cursor.getColumnIndex("id")));
+            set.add(cursor.getLong(cursor.getColumnIndexOrThrow("id")));
         }
         cursor.close();
 

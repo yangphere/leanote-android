@@ -1,19 +1,16 @@
 package org.houxg.leamonax.ui.edit;
 
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
+import android.provider.MediaStore;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.core.view.GravityCompat;
+import androidx.lifecycle.ViewModelProvider;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -24,11 +21,9 @@ import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.elvishew.xlog.XLog;
-import com.yuyh.library.imgsel.ISNav;
-import com.yuyh.library.imgsel.config.ISListConfig;
-import com.yuyh.library.imgsel.ui.ISListActivity;
 
 import org.houxg.leamonax.R;
 import org.houxg.leamonax.editor.Editor;
@@ -36,7 +31,6 @@ import org.houxg.leamonax.editor.MarkdownEditor;
 import org.houxg.leamonax.editor.RichTextEditor;
 import org.houxg.leamonax.service.NoteFileService;
 import org.houxg.leamonax.ui.PictureViewerActivity;
-import org.houxg.leamonax.utils.CollectionUtils;
 import org.houxg.leamonax.utils.DialogUtils;
 import org.houxg.leamonax.utils.OpenUtils;
 import org.houxg.leamonax.widget.ToggleImageButton;
@@ -61,10 +55,10 @@ public class EditorFragment extends Fragment implements Editor.EditorListener {
     private static final String ARG_IS_MARKDOWN = "arg_is_markdown";
     private static final String ARG_ENABLE_EDIT = "arg_enable_edit";
     protected static final int REQ_SELECT_IMAGE = 879;
-    private static final int REQ_CAMERA_PERMISSION = 59;
 
     private EditorFragmentListener mListener;
     private Editor mEditor;
+    private ImageImportViewModel mImageImportViewModel;
 
     @BindView(R.id.fl_container)
     View mToolContainer;
@@ -102,6 +96,15 @@ public class EditorFragment extends Fragment implements Editor.EditorListener {
         arguments.putBoolean(ARG_ENABLE_EDIT, enableEditing);
         fragment.setArguments(arguments);
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mImageImportViewModel = new ViewModelProvider(
+                this,
+                new ImageImportViewModel.Factory(requireContext())
+        ).get(ImageImportViewModel.class);
     }
 
     @Override
@@ -152,6 +155,12 @@ public class EditorFragment extends Fragment implements Editor.EditorListener {
     }
 
     @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mImageImportViewModel.getResult().observe(getViewLifecycleOwner(), this::handleImageImportResult);
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(ARG_IS_MARKDOWN, mEditor instanceof MarkdownEditor);
@@ -180,41 +189,9 @@ public class EditorFragment extends Fragment implements Editor.EditorListener {
 
     @OnClick(R.id.btn_img)
     void handleInsertImage() {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA},
-                    REQ_CAMERA_PERMISSION);
-            return;
-        }
-
-        openImageSelector(true);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQ_CAMERA_PERMISSION) {
-            boolean cameraGranted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
-            openImageSelector(cameraGranted);
-        }
-    }
-
-    private void openImageSelector(boolean supportSelfie) {
-        ISListConfig config = new ISListConfig.Builder()
-                .multiSelect(false)
-                .rememberSelected(false)
-                .btnBgColor(Color.GRAY)
-                .btnTextColor(Color.BLUE)
-                .statusBarColor(Color.parseColor("#3F51B5"))
-                .backResId(R.drawable.ic_arrow_back_white)
-                .title(getString(R.string.webview_select_picture))
-                .titleColor(Color.WHITE)
-                .titleBgColor(Color.parseColor("#3F51B5"))
-                .needScaleCrop(true)
-                .needCamera(supportSelfie)
-                .maxNum(9)
-                .build();
-        ISNav.getInstance().toListActivity(this, config, REQ_SELECT_IMAGE);
+        Intent intent = new Intent(MediaStore.ACTION_PICK_IMAGES);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQ_SELECT_IMAGE);
     }
 
     @OnClick(R.id.btn_link)
@@ -315,17 +292,44 @@ public class EditorFragment extends Fragment implements Editor.EditorListener {
 
         if (requestCode == REQ_SELECT_IMAGE
                 && resultCode == Activity.RESULT_OK
-                && data != null
-                && mListener != null) {
-            List<String> pathList = data.getStringArrayListExtra(ISListActivity.INTENT_RESULT);
-            if (CollectionUtils.isNotEmpty(pathList)) {
-                String path = pathList.get(0);
-                XLog.i(TAG + "path=" + path);
-                //create ImageObject
-                Uri imageUri = mListener.createImage(path);
-                //insert to note
-                mEditor.insertImage("untitled", imageUri.toString());
+                && data != null) {
+            Uri selectedImage = data.getData();
+            if (selectedImage != null) {
+                mImageImportViewModel.importImage(selectedImage);
             }
+        }
+    }
+
+    private void handleImageImportResult(ImageImportViewModel.Result result) {
+        if (result == null) {
+            return;
+        }
+        if (result.getError() != null) {
+            XLog.e(TAG + "Unable to read selected image", result.getError());
+            Toast.makeText(requireContext(), R.string.image_read_failed, Toast.LENGTH_LONG).show();
+            mImageImportViewModel.acknowledge(result);
+            return;
+        }
+        if (mListener == null || mEditor == null) {
+            return;
+        }
+
+        try {
+            ImageImportResultHandler.handle(
+                    result.getFile(),
+                    path -> {
+                        Uri imageUri = mListener.createImage(path);
+                        return imageUri == null ? null : imageUri.toString();
+                    },
+                    uri -> mEditor.insertImage("untitled", uri),
+                    uri -> NoteFileService.deleteLocalImage(Uri.parse(uri)),
+                    org.houxg.leamonax.service.SelectedImageStore.from(requireContext())
+            );
+        } catch (RuntimeException exception) {
+            XLog.e(TAG + "Unable to persist selected image", exception);
+            Toast.makeText(requireContext(), R.string.image_read_failed, Toast.LENGTH_LONG).show();
+        } finally {
+            mImageImportViewModel.acknowledge(result);
         }
     }
 

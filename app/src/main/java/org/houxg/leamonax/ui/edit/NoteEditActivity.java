@@ -4,9 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v7.widget.Toolbar;
+import androidx.activity.OnBackPressedCallback;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.appcompat.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -82,6 +83,12 @@ public class NoteEditActivity extends BaseActivity implements EditorFragment.Edi
         mPager.setPagingEnabled(false);
         mPager.setAdapter(new SectionAdapter(getSupportFragmentManager()));
         mPager.setOffscreenPageLimit(2);
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                handleBackPressed(this);
+            }
+        });
 
         if (savedInstanceState != null) {
             mEditorFragment = (EditorFragment) getSupportFragmentManager().findFragmentByTag(savedInstanceState.getString(TAG_EDITOR));
@@ -238,7 +245,7 @@ public class NoteEditActivity extends BaseActivity implements EditorFragment.Edi
 
                                     if (mIsNewNote && isTitleContentEmpty(wrapper.note)) {
                                         XLog.i(TAG + "remove empty note, id=" + wrapper.note.getId());
-                                        wrapper.note.delete();
+                                        NoteService.deleteNote(wrapper.note);
                                     } else {
                                         saveAsDraft(wrapper);
                                         NoteService.addInCreaseBuildKey(wrapper.note.getId());
@@ -265,8 +272,7 @@ public class NoteEditActivity extends BaseActivity implements EditorFragment.Edi
                 });
     }
 
-    @Override
-    public void onBackPressed() {
+    private void handleBackPressed(final OnBackPressedCallback callback) {
         if (mPager.getCurrentItem() > FRAG_EDITOR) {
             mPager.setCurrentItem(FRAG_EDITOR);
         } else {
@@ -275,7 +281,8 @@ public class NoteEditActivity extends BaseActivity implements EditorFragment.Edi
                     .doOnCompleted(new Action0() {
                         @Override
                         public void call() {
-                            NoteEditActivity.super.onBackPressed();
+                            callback.setEnabled(false);
+                            getOnBackPressedDispatcher().onBackPressed();
                         }
                     })
                     .subscribe(new Action1<Wrapper>() {
@@ -286,7 +293,7 @@ public class NoteEditActivity extends BaseActivity implements EditorFragment.Edi
 
                             if (mIsNewNote && isTitleContentEmpty(wrapper.note)) {
                                 XLog.i(TAG + "remove empty note, id=" + wrapper.note.getId());
-                                wrapper.note.delete();
+                                NoteService.deleteNote(wrapper.note);
                             } else {
                                 saveAsDraft(wrapper);
                             }
@@ -353,6 +360,7 @@ public class NoteEditActivity extends BaseActivity implements EditorFragment.Edi
             noteFromDb.setCreatedTimeVal(updateTime);
         }
         noteFromDb.update();
+        NoteService.pruneUnusedNoteFiles(noteFromDb);
 
         NoteService.updateTagsToLocal(modifiedNote.getId(), wrapper.tags);
     }
@@ -391,7 +399,7 @@ public class NoteEditActivity extends BaseActivity implements EditorFragment.Edi
     private class SectionAdapter extends FragmentPagerAdapter {
 
 
-        public SectionAdapter(android.support.v4.app.FragmentManager fm) {
+        public SectionAdapter(androidx.fragment.app.FragmentManager fm) {
             super(fm);
         }
 

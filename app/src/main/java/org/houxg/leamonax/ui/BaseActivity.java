@@ -1,13 +1,18 @@
 package org.houxg.leamonax.ui;
 
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.graphics.Color;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.houxg.leamonax.R;
 
@@ -17,10 +22,36 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(getResources().getColor(R.color.toolbar));
-        }
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+    }
 
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        View content = findViewById(android.R.id.content);
+        int initialLeft = content.getPaddingLeft();
+        int initialTop = content.getPaddingTop();
+        int initialRight = content.getPaddingRight();
+        int initialBottom = content.getPaddingBottom();
+        ViewCompat.setOnApplyWindowInsetsListener(content, (view, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+                            | WindowInsetsCompat.Type.ime()
+            );
+            view.setPadding(
+                    initialLeft + insets.left,
+                    initialTop + insets.top,
+                    initialRight + insets.right,
+                    initialBottom + insets.bottom
+            );
+            return windowInsets;
+        });
+        WindowCompat.getInsetsController(getWindow(), content).setAppearanceLightStatusBars(true);
+        WindowCompat.getInsetsController(getWindow(), content).setAppearanceLightNavigationBars(true);
+        ViewCompat.requestApplyInsets(content);
     }
 
     protected void initToolBar(Toolbar toolbar) {

@@ -1,0 +1,37 @@
+{
+  "id": "account-bound-reliable-sync",
+  "name": "account-bound-reliable-sync",
+  "title": "Account-bound reliable synchronization",
+  "description": "Bind every sync session to one account scope and use unique idempotent background work",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "xiqi",
+  "assignee": "xiqi",
+  "createdAt": "2026-09-09",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-09-android-modernization-requirements",
+  "relatedFiles": [
+    "app/src/main/java/org/houxg/leamonax/database/AccountDataStore.java",
+    "app/src/main/java/org/houxg/leamonax/background/NoteSyncService.java",
+    "app/src/main/java/org/houxg/leamonax/service/NoteService.java"
+  ],
+  "notes": "Account-scoped sessions use per-account deduplication and a globally serialized durable queue.",
+  "meta": {
+    "depends_on": [
+      "09-09-android-platform-baseline",
+      "09-09-room-data-foundation",
+      "09-09-leanote-api-content-compatibility",
+      "09-09-secure-https-service-connections"
+    ]
+  }
+}

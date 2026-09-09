@@ -1,0 +1,38 @@
+{
+  "id": "compose-webview-editor-boundary",
+  "name": "compose-webview-editor-boundary",
+  "title": "Compose shell and WebView editor boundary",
+  "description": "Modernize the application shell with Compose while preserving and isolating the legacy WebView editor contract",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "xiqi",
+  "assignee": "xiqi",
+  "createdAt": "2026-09-09",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-09-android-modernization-requirements",
+  "relatedFiles": [
+    "app/src/main/AndroidManifest.xml",
+    "app/src/main/java/org/houxg/leamonax/ui/MainActivity.java",
+    "app/src/main/java/org/houxg/leamonax/ui/NoteFragment.java",
+    "app/src/main/java/org/houxg/leamonax/editor/",
+    "app/src/main/assets/"
+  ],
+  "notes": "First Compose slice is the recent-notes shell; the WebView editor core remains isolated.",
+  "meta": {
+    "depends_on": [
+      "09-09-android-platform-baseline",
+      "09-09-leanote-api-content-compatibility",
+      "09-09-secure-https-service-connections"
+    ]
+  }
+}

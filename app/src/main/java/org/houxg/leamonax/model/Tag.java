@@ -166,11 +166,15 @@ public class Tag extends BaseModel{
     }
 
     public static void deleteRelatedTags(long noteLocalId, String userId, long firstReservedId, long... reservedIds) {
+        Long[] boxedReservedIds = new Long[reservedIds.length];
+        for (int index = 0; index < reservedIds.length; index++) {
+            boxedReservedIds[index] = reservedIds[index];
+        }
         SQLite.delete()
                 .from(RelationshipOfNoteTag.class)
                 .where(RelationshipOfNoteTag_Table.userId.eq(userId))
                 .and(RelationshipOfNoteTag_Table.noteLocalId.eq(noteLocalId))
-                .and(RelationshipOfNoteTag_Table.id.notIn(firstReservedId, reservedIds))
+                .and(RelationshipOfNoteTag_Table.id.notIn(firstReservedId, boxedReservedIds))
                 .async()
                 .execute();
     }
