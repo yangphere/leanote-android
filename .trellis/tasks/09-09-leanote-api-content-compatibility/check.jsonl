@@ -6,3 +6,6 @@
 {"file": ".trellis/spec/backend/android-platform-baseline.md", "reason": "Executable platform contract consumed by API validation"}
 {"file": ".trellis/tasks/09-09-secure-https-service-connections/prd.md", "reason": "Required target service trust boundary"}
 {"file": ".trellis/tasks/09-09-secure-https-service-connections/design.md", "reason": "HTTPS endpoint and validation design"}
+{"file": ".trellis/tasks/09-09-leanote-api-content-compatibility/research/empty-files-marker-2026-09-13.md", "reason": "Review marker semantics, server fallback, and evidence boundaries"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Verify editor-to-server file-set data flow"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Verify one owner for file-set presence and indexed metadata"}

@@ -31,7 +31,8 @@ own Trellis tasks and specs.
 
 #### Toolchain
 
-- Run Gradle with JDK 17 or newer; JDK 17 is the repository baseline.
+- Run Gradle with JDK 21. Record both the Launcher and Daemon JVM; both must
+  resolve to JDK 21 on supported local and CI paths.
 - Keep Kotlin/Compose Compiler, KSP, Compose BOM, Hilt, Gradle, and AGP versions
   explicit in version-controlled build files. Do not use dynamic versions such
   as `latest.release`.
@@ -47,18 +48,18 @@ own Trellis tasks and specs.
 
 #### Release signing environment
 
-The release keystore path is `leanote-android-new.jks` at the repository root.
-It is local secret material and must not be committed. All of these environment
-variables are required together:
+The release keystore exists only at the runner-temporary path supplied through
+`RELEASE_KEYSTORE_PATH`; it must not be committed or retained after the release
+step. All of these environment variables are required together:
 
+- `RELEASE_KEYSTORE_PATH`
 - `KEY_ALIAS`
 - `KEY_PWD`
 - `KEYSTORE_PWD`
 
 `BUGLY_PRD` is optional and becomes an empty `BuildConfig.BUGLY_KEY` when it is
-absent. `TRAVIS_TAG` and `TRAVIS_BUILD_NUMBER` may supply the version name and
-version code; their existing staging defaults remain valid for local debug
-builds.
+absent. `GITHUB_REF_NAME` and `GITHUB_RUN_NUMBER` may supply the version name
+and version code; their staging defaults remain valid for local debug builds.
 
 Missing release signing material is an error. The build must not silently
 produce an unsigned release APK or fall back to debug signing.
@@ -160,7 +161,7 @@ then delete the switches.
 
 ### 5. Good / Base / Bad Cases
 
-- Good: JDK 17+, SDK 37, and the checked-in wrapper produce a debug APK; all JVM
+- Good: JDK 21, SDK 37, and the checked-in wrapper produce a debug APK; all JVM
   tests pass; lint has zero errors; a second debug build reuses configuration
   cache.
 - Base: No release secrets are present. Debug verification passes and
@@ -247,7 +248,7 @@ def verifyReleaseSigning = tasks.register('verifyReleaseSigning') {
     doLast {
         if (!releaseSigningConfigured) {
             throw new GradleException(
-                    'Release signing requires leanote-android-new.jks and KEY_ALIAS, KEY_PWD, KEYSTORE_PWD.'
+                    'Release signing requires RELEASE_KEYSTORE_PATH, KEY_ALIAS, KEY_PWD, KEYSTORE_PWD.'
             )
         }
     }

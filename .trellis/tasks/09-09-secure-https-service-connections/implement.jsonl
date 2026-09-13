@@ -3,3 +3,6 @@
 {"file": ".trellis/tasks/09-09-android-modernization-requirements/research/current-state-evidence.md", "reason": "Pre-migration trust-all implementation snapshot"}
 {"file": ".trellis/tasks/09-09-android-platform-baseline/research/version-matrix.md", "reason": "Verified Android platform and dependency baseline"}
 {"file": ".trellis/spec/backend/android-platform-baseline.md", "reason": "Executable platform contract consumed by HTTPS migration"}
+{"file": ".trellis/tasks/09-09-secure-https-service-connections/research/current-https-boundary-2026-09-13.md", "reason": "Current network paths, account binding defect, secure migration seams, and evidence gates"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Endpoint and credential data flow across storage, service, network, and UI"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Single ownership of endpoint parsing and HTTP policy"}

@@ -35,6 +35,13 @@ public class NoteFileDataStore {
                 .querySingle();
     }
 
+    public static boolean hasLocalPath(String localPath) {
+        return SQLite.select()
+                .from(NoteFile.class)
+                .where(NoteFile_Table.localPath.eq(localPath))
+                .querySingle() != null;
+    }
+
     public static List<String> deleteExcept(long noteLocalId, Collection<String> excepts) {
         Set<String> reservedIds = new HashSet<>(excepts);
         List<String> removedPaths = new ArrayList<>();

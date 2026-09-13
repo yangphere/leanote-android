@@ -17,6 +17,7 @@ import com.tencent.bugly.crashreport.CrashReport;
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.greenrobot.eventbus.EventBus;
+import org.houxg.leamonax.service.SelectedImageCleanupScheduler;
 
 import dagger.hilt.android.HiltAndroidApp;
 
@@ -44,6 +45,7 @@ public class Leamonax extends Application {
                 .throwSubscriberException(true)
                 .installDefaultEventBus();
         FlowManager.init(new FlowConfig.Builder(this).build());
+        SelectedImageCleanupScheduler.start(this);
         JodaTimeAndroid.init(this);
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this);

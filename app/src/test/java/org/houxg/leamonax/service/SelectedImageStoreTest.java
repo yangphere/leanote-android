@@ -63,6 +63,20 @@ public class SelectedImageStoreTest {
     }
 
     @Test
+    public void rejectsEmptyStreamWithoutRetainingAFile() throws Exception {
+        File managedDirectory = temporaryFolder.newFolder("selected-images");
+        SelectedImageStore store = new SelectedImageStore(managedDirectory);
+
+        try {
+            store.copy("image/png", new ByteArrayInputStream(new byte[0]));
+        } catch (IOException expected) {
+            assertTrue(expected.getMessage().contains("empty"));
+        }
+
+        assertFalse(managedDirectory.listFiles().length > 0);
+    }
+
+    @Test
     public void neverDeletesFilesOutsideManagedDirectory() throws Exception {
         File managedDirectory = temporaryFolder.newFolder("selected-images");
         File external = temporaryFolder.newFile("keep.jpg");

@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.nio.file.Files;
+import java.io.ByteArrayInputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
@@ -20,8 +20,8 @@ public class ImageImportResultHandlerTest {
     @Test
     public void registersImageAndInsertsReturnedUriIntoEditor() throws Exception {
         File directory = temporaryFolder.newFolder("selected-images");
-        File image = new File(directory, "image.png");
-        Files.write(image.toPath(), new byte[]{1});
+        SelectedImageStore store = new SelectedImageStore(directory);
+        File image = store.copy("image/png", new ByteArrayInputStream(new byte[]{1}));
         AtomicReference<String> inserted = new AtomicReference<>();
 
         ImageImportResultHandler.handle(
@@ -29,7 +29,7 @@ public class ImageImportResultHandlerTest {
                 path -> "file:/getImage?id=local-id",
                 inserted::set,
                 uri -> { },
-                new SelectedImageStore(directory)
+                store
         );
 
         assertEquals("file:/getImage?id=local-id", inserted.get());
@@ -39,8 +39,8 @@ public class ImageImportResultHandlerTest {
     @Test
     public void deletesManagedCopyWhenRelationshipPersistenceFails() throws Exception {
         File directory = temporaryFolder.newFolder("selected-images");
-        File image = new File(directory, "image.png");
-        Files.write(image.toPath(), new byte[]{1});
+        SelectedImageStore store = new SelectedImageStore(directory);
+        File image = store.copy("image/png", new ByteArrayInputStream(new byte[]{1}));
 
         try {
             ImageImportResultHandler.handle(
@@ -48,7 +48,7 @@ public class ImageImportResultHandlerTest {
                     path -> { throw new IllegalStateException("database rejected relation"); },
                     uri -> { },
                     uri -> { },
-                    new SelectedImageStore(directory)
+                    store
             );
         } catch (IllegalStateException expected) {
             assertEquals("database rejected relation", expected.getMessage());
@@ -60,8 +60,8 @@ public class ImageImportResultHandlerTest {
     @Test
     public void rollsBackPersistedRelationshipWhenEditorInsertionFails() throws Exception {
         File directory = temporaryFolder.newFolder("selected-images");
-        File image = new File(directory, "image.png");
-        Files.write(image.toPath(), new byte[]{1});
+        SelectedImageStore store = new SelectedImageStore(directory);
+        File image = store.copy("image/png", new ByteArrayInputStream(new byte[]{1}));
         AtomicReference<String> rolledBack = new AtomicReference<>();
 
         try {
@@ -70,7 +70,7 @@ public class ImageImportResultHandlerTest {
                     path -> "file:/getImage?id=local-id",
                     uri -> { throw new IllegalStateException("editor rejected image"); },
                     rolledBack::set,
-                    new SelectedImageStore(directory)
+                    store
             );
         } catch (IllegalStateException expected) {
             assertEquals("editor rejected image", expected.getMessage());
@@ -82,8 +82,8 @@ public class ImageImportResultHandlerTest {
     @Test
     public void cleansManagedCopyWhenRelationshipRollbackFails() throws Exception {
         File directory = temporaryFolder.newFolder("selected-images");
-        File image = new File(directory, "image.png");
-        Files.write(image.toPath(), new byte[]{1});
+        SelectedImageStore store = new SelectedImageStore(directory);
+        File image = store.copy("image/png", new ByteArrayInputStream(new byte[]{1}));
 
         try {
             ImageImportResultHandler.handle(
@@ -91,7 +91,7 @@ public class ImageImportResultHandlerTest {
                     path -> "file:/getImage?id=local-id",
                     uri -> { throw new IllegalStateException("editor rejected image"); },
                     uri -> { throw new IllegalStateException("relation rollback failed"); },
-                    new SelectedImageStore(directory)
+                    store
             );
         } catch (IllegalStateException expected) {
             assertEquals("editor rejected image", expected.getMessage());

@@ -68,7 +68,7 @@ public final class ImageImportViewModel extends ViewModel {
                     return store.copy(mimeType, input);
                 }
             };
-            return (T) new ImageImportViewModel(importer, Executors.newSingleThreadExecutor(), store::deleteIfManaged);
+            return (T) new ImageImportViewModel(importer, Executors.newSingleThreadExecutor(), store::abandonAndDelete);
         }
     }
 

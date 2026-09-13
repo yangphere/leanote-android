@@ -34,9 +34,10 @@ final class ImageImportResultHandler {
                 throw new IllegalStateException("Unable to persist selected image");
             }
             insertion.insert(imageUri);
+            store.acknowledge(image);
         } catch (RuntimeException exception) {
             if (imageUri == null) {
-                store.deleteIfManaged(image);
+                abandonAndDelete(store, image, exception);
             } else {
                 try {
                     rollback.rollback(imageUri);
@@ -45,10 +46,18 @@ final class ImageImportResultHandler {
                 } finally {
                     // The relationship owner normally removes the file. Keep the
                     // import boundary fail-closed if relationship rollback fails.
-                    store.deleteIfManaged(image);
+                    abandonAndDelete(store, image, exception);
                 }
             }
             throw exception;
+        }
+    }
+
+    private static void abandonAndDelete(SelectedImageStore store, File image, RuntimeException failure) {
+        try {
+            store.abandonAndDelete(image);
+        } catch (RuntimeException cleanupFailure) {
+            failure.addSuppressed(cleanupFailure);
         }
     }
 }

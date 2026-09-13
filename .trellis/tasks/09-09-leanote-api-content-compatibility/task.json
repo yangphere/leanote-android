@@ -23,7 +23,10 @@
   "relatedFiles": [
     "app/src/main/java/org/houxg/leamonax/network/api/",
     "app/src/main/java/org/houxg/leamonax/service/NoteService.java",
-    "app/src/main/java/org/houxg/leamonax/service/NoteFileService.java"
+    "app/src/main/java/org/houxg/leamonax/service/NoteFileService.java",
+    "app/src/main/java/org/houxg/leamonax/model/Note.java",
+    "app/src/main/java/org/houxg/leamonax/model/NoteFile.java",
+    "app/src/test/java/org/houxg/leamonax/service/"
   ],
   "notes": "Compatibility target is https://me.xiqi.site/ only; test credentials must remain protected.",
   "meta": {

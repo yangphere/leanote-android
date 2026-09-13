@@ -22,8 +22,12 @@
   "parent": "09-09-android-modernization-requirements",
   "relatedFiles": [
     "app/src/main/java/org/houxg/leamonax/network/ApiProvider.java",
+    "app/src/main/java/org/houxg/leamonax/model/Account.java",
+    "app/src/main/java/org/houxg/leamonax/model/User.java",
     "app/src/main/java/org/houxg/leamonax/service/NoteFileService.java",
-    "app/src/main/java/org/houxg/leamonax/network/api/"
+    "app/src/main/java/org/houxg/leamonax/network/api/",
+    "app/src/main/java/org/houxg/leamonax/ui/",
+    "app/src/main/AndroidManifest.xml"
   ],
   "notes": "TLS remains fail-closed; no trust-all, hostname bypass, plaintext fallback, or embedded credentials.",
   "meta": {

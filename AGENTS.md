@@ -6,13 +6,13 @@ This is a single-module Android application. Project-wide Gradle configuration l
 
 ## Build, Test, and Development Commands
 
-Use the checked-in Gradle wrapper from the repository root. The legacy toolchain expects JDK 8, Android SDK 26, and Build Tools 28.0.3.
+Use the checked-in Gradle wrapper from the repository root. Gradle must run on JDK 21; the application compiles with Android SDK 37 and Build Tools 36.0.0. GitHub Actions is the only supported CI and release entry point.
 
 - `./gradlew assembleDebug` (`.\gradlew.bat assembleDebug` on Windows): build a debug APK.
 - `./gradlew installDebug`: install the debug build on a connected device or emulator.
 - `./gradlew testDebugUnitTest`: run local JVM unit tests.
 - `./gradlew connectedDebugAndroidTest`: run instrumentation tests on a connected target.
-- `./gradlew lint`: run Android lint; review all findings even though the build currently does not abort on lint errors.
+- `./gradlew lintDebug --no-configuration-cache`: run Android lint; lint errors fail the build.
 - `./gradlew clean`: remove generated build output.
 
 ## Coding Style & Naming Conventions
@@ -29,7 +29,7 @@ History favors short, imperative subjects such as `Fix TitleHighlight`, `Add ...
 
 ## Security & Configuration
 
-Keep `local.properties`, the decrypted keystore, and credentials out of Git. Release signing reads `KEY_ALIAS`, `KEY_PWD`, and `KEYSTORE_PWD`; Bugly configuration reads `BUGLY_PRD`. Provide these through the environment rather than source files.
+Keep `local.properties`, keystores, and credentials out of Git. Release signing reads the temporary path in `RELEASE_KEYSTORE_PATH` plus `KEY_ALIAS`, `KEY_PWD`, and `KEYSTORE_PWD`; Bugly configuration reads optional `BUGLY_PRD`. Production values are injected only through the protected GitHub `production` Environment. Missing signing input fails before release packaging and never falls back to debug or unsigned output. See `docs/releasing-android.md`.
 <!-- TRELLIS:START -->
 # Trellis Instructions
 

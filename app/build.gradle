@@ -8,11 +8,12 @@ plugins {
 def dbflowVersion = '4.2.4'
 def hiltVersion = '2.60.1'
 def composeBomVersion = '2026.08.00'
-def ciName = isEmpty(System.getenv('TRAVIS_TAG')) ? 'Staging' : System.getenv('TRAVIS_TAG')
-def ciCode = isEmpty(System.getenv('TRAVIS_BUILD_NUMBER')) ? 1000 : Integer.valueOf(System.getenv('TRAVIS_BUILD_NUMBER'))
+def ciName = isEmpty(System.getenv('GITHUB_REF_NAME')) ? 'Staging' : System.getenv('GITHUB_REF_NAME')
+def ciCode = isEmpty(System.getenv('GITHUB_RUN_NUMBER')) ? 1000 : Integer.valueOf(System.getenv('GITHUB_RUN_NUMBER'))
 def buglyPrdKey = isEmpty(System.getenv('BUGLY_PRD')) ? '' : System.getenv('BUGLY_PRD')
-def releaseKeystore = rootProject.file('leanote-android-new.jks')
-def releaseSigningConfigured = releaseKeystore.isFile() &&
+def releaseKeystorePath = System.getenv('RELEASE_KEYSTORE_PATH')
+def releaseKeystore = isEmpty(releaseKeystorePath) ? null : file(releaseKeystorePath)
+def releaseSigningConfigured = releaseKeystore != null && releaseKeystore.isFile() &&
         !isEmpty(System.getenv('KEY_ALIAS')) &&
         !isEmpty(System.getenv('KEY_PWD')) &&
         !isEmpty(System.getenv('KEYSTORE_PWD'))
@@ -81,7 +82,7 @@ def verifyReleaseSigning = tasks.register('verifyReleaseSigning') {
     doLast {
         if (!releaseSigningConfigured) {
             throw new GradleException(
-                    'Release signing requires leanote-android-new.jks and KEY_ALIAS, KEY_PWD, KEYSTORE_PWD.'
+                    'Release signing requires RELEASE_KEYSTORE_PATH, KEY_ALIAS, KEY_PWD, KEYSTORE_PWD.'
             )
         }
     }
@@ -123,6 +124,7 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.11.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0'
+    implementation 'androidx.work:work-runtime:2.11.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'
 
     implementation "com.google.dagger:hilt-android:${hiltVersion}"

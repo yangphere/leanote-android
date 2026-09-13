@@ -5,3 +5,4 @@
 {"file": ".trellis/tasks/09-09-android-modernization-requirements/research/current-state-evidence.md", "reason": "Pre-migration Gradle and platform snapshot"}
 {"file": ".trellis/tasks/09-09-android-platform-baseline/research/version-matrix.md", "reason": "Final toolchain decisions and verification evidence"}
 {"file": ".trellis/spec/backend/android-platform-baseline.md", "reason": "Executable platform build runtime signing and validation contract"}
+{"file": ".trellis/tasks/09-09-android-platform-baseline/research/spec-audit-2026-09-09.md", "reason": "Current audit findings, evidence states, and open decisions"}
