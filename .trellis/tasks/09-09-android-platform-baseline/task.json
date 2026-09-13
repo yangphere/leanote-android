@@ -45,7 +45,7 @@
     ".trellis/spec/backend/android-platform-baseline.md",
     "docs/releasing-android.md"
   ],
-  "notes": "Only dependency-free child in the modernization track; activation is already present. Owner decisions fix APK-only release, GitHub Actions as the sole CI entry, JDK 21, durable Picker import journaling with process-death abandonment/cleanup, and no repository keystore input. EVID-01 through EVID-06 now define workflow, ledger, signing, build, device, and 16 KB evidence closure; implementation and verification remain open before further feature coding.",
+  "notes": "Only dependency-free child in the modernization track. Platform implementation, Picker ledger tests, local verification, and GitHub-hosted debug run 34733222402 are complete; EVID-02 and EVID-04 are verified. The task remains in progress because production signing, current API 34/35+/36 device behavior, process-death E2E, and final signed-APK 16 KB runtime evidence are unavailable; dependent feature tasks must not start until those gates close.",
   "meta": {
     "delivery_mode": "direct",
     "depends_on": []

@@ -38,7 +38,7 @@
 
 - 首发只发布 APK；GitHub Actions 是唯一受支持的 CI/发布入口，生产 workflow 使用 JDK 21 和 SDK platform 37，`.travis.yml` 不得触发发布。
 - `leanote-android-new.jks.enc` 不再作为仓库签名输入。GitHub Actions `production` Environment 提供 Base64 keystore、`KEY_ALIAS`、`KEY_PWD` 和 `KEYSTORE_PWD`；keystore 仅在 runner 临时目录存在，任务结束时清理。
-- 签名私钥保持长期稳定；执行访问审计和离线备份，不做会破坏 APK 更新能力的随意换钥。密钥策略已确认，实际 Environment 配置与签名构建仍待验证。
+- 签名私钥保持长期稳定；执行访问审计和离线备份，不做会破坏 APK 更新能力的随意换钥。`production` Environment 已配置 `v*` tag 部署限制和指定 reviewer；当前未配置签名 secrets，实际签名构建仍待验证。
 - Photo Picker 进程终止策略已确认：持久账本记录导入状态，未确认记录转为 `abandoned`，应用启动清扫并由 WorkManager 补偿；清扫前核对关系 owner，未确认选择不恢复，用户重新选择，配置重建保留 pending。
 
 ## 已记录验证（历史受控环境）
@@ -84,10 +84,10 @@
 
 | 需求 | 必须登记的证据 | 当前状态 |
 |---|---|---|
-| EVID-01 GitHub Actions 工作流 | workflow 路径/触发条件、runner、JDK 21/SDK 37、PR 与 production 权限边界、APK 产物和 SHA-256 | `blocked`：当前尚未创建或验证 workflow |
-| EVID-02 Photo Picker 账本与清扫 | 状态机、账本位置、启动/WorkManager 清扫、关系核对、四个进程终止窗口测试 | `blocked`：当前实现仍为 ViewModel 生命周期清理 |
-| EVID-03 签名迁移 | 仓库/Travis 无 keystore 输入、Environment secrets、临时文件清理、缺失 fail-closed、签名指纹 | `blocked`：当前仍跟踪 `.enc`，无受保护 release |
-| EVID-04 JDK 21 / SDK 37 构建 | Launcher/Daemon JVM、`JAVA_HOME`、SDK/Build Tools、测试、lint、两次 debug 构建和 cache 命中 | `blocked`：当前 runner 仍选择 JDK 8 且缺 SDK 路径 |
+| EVID-01 GitHub Actions 工作流 | workflow 路径/触发条件、runner、JDK 21/SDK 37、PR 与 production 权限边界、APK 产物和 SHA-256 | `partial`：debug run `34733222402` 和 artifact 已验证，`production` Environment 已受 reviewer 与 `v*` tag 限制；尚无签名 release APK/SHA-256 |
+| EVID-02 Photo Picker 账本与清扫 | 状态机、账本位置、启动/WorkManager 清扫、关系核对、四个进程终止窗口测试 | `verified`：持久账本与五态状态机已实现，四个终止窗口、关系 owner、配置重建、幂等确认/清扫回归已在 GitHub runner 通过 |
+| EVID-03 签名迁移 | 仓库/Travis 无 keystore 输入、Environment secrets、临时文件清理、缺失 fail-closed、签名指纹 | `partial`：`.enc` 与 Travis 已移除，Environment 保护与无签名 fail-closed 已验证；尚无生产 secrets、签名 APK 和指纹 |
+| EVID-04 JDK 21 / SDK 37 构建 | Launcher/Daemon JVM、`JAVA_HOME`、SDK/Build Tools、测试、lint、两次 debug 构建和 cache 命中 | `verified`：run `34733222402` 已登记 JDK 21/SDK 37 矩阵，测试、lint、两次 debug 构建和 cache stored/reused 通过 |
 | EVID-05 真实设备行为 | API 34、API 35+ 两种导航、API 36 大屏/调整尺寸、Photo Picker、predictive-back 的操作记录 | `blocked`：只有历史 API 34/36 smoke 记录 |
 | EVID-06 APK 与 16 KB | 最终签名 APK、Manifest/依赖/动态库清单、ZIP 对齐、ELF 对齐、真实 16 KB 运行结果 | `blocked`：只有历史 debug 包检查 |
 
@@ -97,7 +97,7 @@
 - 已删除 `.travis.yml` 和受跟踪的 `leanote-android-new.jks.enc`。Gradle 只接受 runner 临时路径 `RELEASE_KEYSTORE_PATH` 以及 `KEY_ALIAS`、`KEY_PWD`、`KEYSTORE_PWD`；缺少任一输入仍由 `verifyReleaseSigning` fail closed。
 - 已实现 Photo Picker 持久账本：复制前记录 `pending`，完成后原子写入 `succeeded`，调用方完成关系与正文插入后记为 `acknowledged`，失败/放弃分别记录 `failed`/`abandoned`。进程 session 将当前导入与旧进程残留分离，启动清扫及每日 WorkManager 补偿在删除前查询 `NoteFile` 关系 owner，且删除仍受 managed-path 规范化检查保护。
 - TDD RED 尝试命令 `\.\gradlew.bat testDebugUnitTest --tests org.houxg.leamonax.service.SelectedImageLedgerTest --no-configuration-cache` 在测试编译前被当前环境的 `SDK location not found` 阻塞，未获得可归因于新断言的 Gradle RED。随后使用 JDK 21、JUnit 4.13.2 和 Android API stub 对 Picker 核心执行独立编译；首次编译因测试 lambda 的 checked `IOException` 失败，修正测试并补充失败删除补偿回归后 GREEN：`SelectedImageStoreTest`、`SelectedImageLedgerTest`、`ImageImportResultHandlerTest` 共 20 个测试通过。
-- `git diff --check` 通过（只有工作树 CRLF 转换提示）。GitHub workflow 尚未在 GitHub runner 运行；本机隔离 SDK 安装尝试因新版 Android CLI 不接受旧 `sdkmanager` 包名而未能补齐 platform 37，因此 EVID-01/EVID-04 保持 `blocked`，不得将 workflow 静态存在等同于 runner 证据。
+- `git diff --check` 通过（只有工作树 CRLF 转换提示）。此时 GitHub workflow 尚未在 GitHub runner 运行，后续 run `34733222402` 已补齐 EVID-04；本条保留为修复 SDK 包名前的时序记录。
 - EVID-03 仍缺受保护 Environment 中的真实签名构建与签名指纹；EVID-05 仍缺 API 34/35+/36 目标上的当前设备操作；EVID-06 仍缺最终签名 APK 与真实 16 KB page-size 运行。任务保持 `in_progress`。
 
 ## 2026-09-13 独立复核与本地重放
@@ -108,4 +108,14 @@
 - 随后两次 `.\gradlew.bat assembleDebug --configuration-cache`：第一次 stored，第二次 reused。debug APK SHA-256 为 `CFB2B2FA7E27D6851FDD32718D389A6F64843C695261D2934A9534E0A100065B`。
 - 无签名输入执行 `.\gradlew.bat assembleRelease --no-configuration-cache`：按预期在 `:app:verifyReleaseSigning` 失败，错误明确列出 `RELEASE_KEYSTORE_PATH`、`KEY_ALIAS`、`KEY_PWD`、`KEYSTORE_PWD`，且 `app-release.apk` 不存在。
 - 独立 JDK 21/JUnit 运行 Picker 核心与 handler 测试 20/20 通过；复核补充覆盖了当前进程中失败删除由 WorkManager 候选重试的路径。
-- 上述只构成本地自动化证据。GitHub-hosted runner、受保护 `production` Environment 的真实签名、API 34/35+/36 当前设备、Photo Picker 进程终止 E2E、最终签名 APK 和真实 16 KB page-size 运行仍保持 `blocked`。
+- 上述本地自动化证据之后，GitHub-hosted debug runner 已由 run `34733222402` 闭合。受保护 `production` Environment 的真实签名、API 34/35+/36 当前设备、Photo Picker 进程终止 E2E、最终签名 APK 和真实 16 KB page-size 运行仍保持 `blocked`。
+
+## 2026-09-13 GitHub-hosted runner 重放
+
+- GitHub Actions run `34733222402`（提交 `1e8055e31d5d77c3722166c9e42598e208ac7f52`，`dev` push）在 `ubuntu-24.04` 上 4 分 33 秒完成，`verify-debug` 成功，`release-apk` 按非发布触发条件跳过。URL：<https://github.com/yangphere/leanote-android/actions/runs/34733222402>。
+- runner 记录 Temurin OpenJDK 21.0.12.1；Gradle 9.6.0 的 Launcher JVM 为 21.0.12.1，Daemon JVM 为 `/usr/lib/jvm/temurin-21-jdk-amd64`；`JAVA_HOME=/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64`，`ANDROID_SDK_ROOT=/usr/local/lib/android/sdk`。
+- 安装后断言记录 Android Command-line Tools 23.0（build `16111833`）、SDK Platform 37.0 和 Build Tools 36.0.0；同一提交的 `build.gradle` 固定 AGP 9.4.0、Kotlin 2.3.21、KSP 2.3.11 与 Hilt 2.60.1。
+- `:app:dependencies --configuration debugRuntimeClasspath`、`testDebugUnitTest`、`lintDebug`、两次 `assembleDebug` 均成功；首次 debug 构建记录 `Configuration cache entry stored`，第二次记录 `Reusing configuration cache` 和 `Configuration cache entry reused`。
+- `app-debug` artifact 大小 23,543,581 bytes，Actions archive digest 为 `sha256:e8ec321b2af31faff985402eaff4646cbdc82a1dddc6612f7cf8eb18a391a05c`；解包后 `app-debug.apk` 大小 52,013,953 bytes，SHA-256 为 `F6DF8807DD361D112E1A2BD38BAB8B1C12589B4F8D2B88DD8F75BDF1E2ED63DA`。
+- 下载的 APK 由 Build Tools 36.0.0 复核：application ID `com.leanote.android`、min SDK 34、target SDK 36、compile SDK 37，`zipalign -c -P 16 -v 4` 成功，包内无 `.so`。这只是 debug 产物，不替代最终签名 APK 或真实 16 KB page-size 运行。
+- GitHub `production` Environment 已创建，限制只允许 `v*` tag 部署并要求 reviewer `yangphere`。环境中尚无 secrets；未生成、读取或输出任何生产签名材料。

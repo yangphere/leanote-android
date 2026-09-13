@@ -17,7 +17,7 @@
 - `707e8fa` 是迁移前快照：当时 `app/build.gradle` 为 API 26/19/26，仍使用旧 Support Library 和 DBFlow；它不是当前状态。
 - `4556705` 是已存在的基线实现快照。当前 `app/build.gradle:24-35` 为 `compileSdk 37`、`minSdk 34`、`targetSdk 36`、`applicationId com.leanote.android`；`settings.gradle:9-10` 仍只有 `:app`。
 - 当前构建环境的 PATH 指向 JDK 21，但 `gradlew -version` 仍选择 JDK 8；在 JDK 21 重试又因没有 Android SDK 目录失败。因此历史 `research/version-matrix.md` 中的成功记录必须标为历史受控环境证据，不能替代当前可复现结果。
-- 规格审计时 `.travis.yml:2-10` 和 `AGENTS.md:9` 仍写着 JDK 8、API 26、Build Tools 28；当前实现已删除 Travis 配置并同步开发者入口和发布文档。GitHub Actions workflow 的真实 runner 运行证据仍未闭合。
+- 规格审计时 `.travis.yml:2-10` 和 `AGENTS.md:9` 仍写着 JDK 8、API 26、Build Tools 28；当前实现已删除 Travis 配置并同步开发者入口和发布文档。GitHub Actions run `34733222402` 已在提交 `1e8055e` 上闭合 debug runner 构建证据；production 签名和真实设备证据仍单独受 EVID-03/EVID-05/EVID-06 门禁。
 - 完整证据、命令输出和未关闭项见 `research/spec-audit-2026-09-09.md` 与 `research/version-matrix.md`。
 
 ## 需求
@@ -135,20 +135,21 @@
 - [x] `confirmed-current`：当前配置声明 `minSdk 34`、`targetSdk 36`、`compileSdk 37`、应用 ID `com.leanote.android`，且 Gradle settings 只有 `:app`。
 - [x] `confirmed-current`：依赖版本为固定值，仓库未恢复 JCenter/HTTP；Manifest 静态扫描无固定方向、`REQUEST_INSTALL_PACKAGES` 和 Bugly upgrade activity。
 - [x] `verified (historical)`：受控历史环境曾完成 debug/JVM/lint 构建，并在 API 34/36 AVD 完成安装、冷启动、Compose/Hilt smoke 和 Picker 打开/返回；该记录不替代当前环境重放。
-- [x] `verified (local runner)`：在 JDK 21、SDK 37 与 Build Tools 36.0.0 可定位的 Windows runner 上重放 `testDebugUnitTest`、`lintDebug`、`assembleDebug`，32 个 JVM 测试、lint 和 debug 构建通过，随后两次 configuration-cache 构建分别 stored/reused；GitHub runner 证据仍由 EVID-04 单独门禁。
+- [x] `verified (local runner)`：在 JDK 21、SDK 37 与 Build Tools 36.0.0 可定位的 Windows runner 上重放 `testDebugUnitTest`、`lintDebug`、`assembleDebug`，32 个 JVM 测试、lint 和 debug 构建通过，随后两次 configuration-cache 构建分别 stored/reused。
+- [x] `verified (GitHub runner debug)`：GitHub Actions run `34733222402` 在 `ubuntu-24.04` 上使用 Temurin 21.0.12.1、Gradle 9.6.0、Android Command-line Tools 23.0、SDK Platform 37.0 和 Build Tools 36.0.0；`testDebugUnitTest`、`lintDebug`、两次 `assembleDebug` 全部成功，configuration cache 从 stored 到 reused，并上传 debug APK artifact。
 - [ ] `blocked`：首发 APK 在 API 34 及至少一个更高版本完成全新安装、冷启动、基础导航、系统栏/IME、predictive back、可调整尺寸和大屏证据。
 - [ ] `blocked`：受保护 release 签名验证通过；缺少签名材料时 `verifyReleaseSigning` 失败且没有 release 产物。
 - [ ] `blocked`：最终发布 APK 的 Manifest、动态库列表、ZIP/ELF 16 KB 检查和真实 16 KB page-size 运行验证完成。
-- [ ] `blocked`：Photo Picker 的 MIME/URI/复制、配置重建、调用方确认、消费失败清理，以及持久账本、进程终止 `abandoned`、启动/WorkManager 清扫和关系核对具有自动化或真实设备证据；下游关系/服务器语义不在此项重复验收。
-- [ ] `blocked`：GitHub Actions 作为唯一受支持入口使用 JDK 21、SDK 37 和同一版本矩阵，且 `AGENTS.md`/发布文档不再指向旧 API 26/JDK 8 基线；`.travis.yml` 不发布。
+- [x] `verified (automated)`：Photo Picker 的 MIME/URI/复制、配置重建、调用方确认、消费失败清理，以及持久账本、进程终止 `abandoned`、启动/WorkManager 清扫和关系核对具有 JVM 自动化证据；真实设备 E2E 仍由 EVID-05 门禁，下游关系/服务器语义不在此项重复验收。
+- [x] `verified (debug delivery)`：GitHub Actions 作为唯一受支持入口使用 JDK 21、SDK 37 和同一版本矩阵，且 `AGENTS.md`/发布文档不再指向旧 API 26/JDK 8 基线；`.travis.yml` 已删除。签名 release 仍由 EVID-01/EVID-03 门禁。
 - [x] `superseded`：旧 APK 覆盖升级、历史签名连续性和 DBFlow 原地迁移由 ADR 0007 取代，不进入本任务验收。
 
 ### 证据闭合验收
 
 - [ ] `EVID-01 blocked`：唯一 GitHub Actions workflow 按 PR/受保护 release 分流，使用 JDK 21/SDK 37，发布 APK 并登记 SHA-256；Travis 不触发发布。
-- [ ] `EVID-02 blocked`：持久账本、状态机、启动/WorkManager 清扫、关系核对和四个进程终止窗口测试全部通过。
+- [x] `EVID-02 verified`：持久账本、五态状态机、启动/WorkManager 清扫、关系核对和四个进程终止窗口均有自动化回归，并在 run `34733222402` 的 `testDebugUnitTest` 中通过。
 - [ ] `EVID-03 blocked`：仓库和 Travis 不再使用加密 keystore；GitHub production secrets 临时解码、清理、缺失 fail-closed 和签名指纹登记均有证据。
-- [ ] `EVID-04 blocked`：JDK 21/SDK 37 runner 完成 JVM 测试、lint、两次 debug 构建和 configuration cache 复用，并登记完整环境矩阵。
+- [x] `EVID-04 verified`：run `34733222402` 在 JDK 21/SDK 37 runner 完成 JVM 测试、lint、两次 debug 构建和 configuration cache 复用，环境矩阵、依赖解析和 debug APK artifact 已登记。
 - [ ] `EVID-05 blocked`：API 34/35+/36 真实设备完成安装、导航、系统栏/IME、大屏调整、Photo Picker 和 predictive-back 证据。
 - [ ] `EVID-06 blocked`：最终签名 APK 完成 Manifest/依赖/动态库扫描、ZIP/ELF 16 KB 检查和真实 16 KB page-size 运行验证。
 
@@ -163,7 +164,7 @@
 - 进程终止发生在 Picker 副本完成但关系/正文尚未确认时，视为 `abandoned`；持久账本、启动清扫和 WorkManager 补偿负责最终清理，关系 owner 是已提交关系的权威来源。未确认选择不恢复，用户重新选择；配置重建不触发清理。
 - `leanote-android-new.jks.enc` 不再作为仓库签名输入；GitHub Actions `production` Environment 提供受保护 secrets，keystore 只在 runner 临时目录短暂存在并在结束时删除。签名私钥保持稳定，访问审计和备份轮换不等于更换签名身份。
 
-上述策略已经确认，但当前环境缺失的设备、SDK、workflow、签名和 16 KB 证据仍保持 `blocked`，不得把策略确认等同于实现完成。
+上述策略已经确认，debug GitHub runner 及 SDK 证据已闭合；设备、production 签名和真实 16 KB 运行证据仍保持 `blocked`，不得把策略确认或 debug 构建等同于发布验收。
 
 ## 范围外
 

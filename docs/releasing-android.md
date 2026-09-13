@@ -2,7 +2,7 @@
 
 GitHub Actions 的 `.github/workflows/android.yml` 是唯一受支持的 CI 和发布入口。普通 Pull Request 只在 JDK 21、Android SDK 37 与 Build Tools 36.0.0 上执行 JVM 测试、lint 和 debug APK 构建，不读取生产签名材料。
 
-带 `v` 前缀的 tag 或人工触发进入受保护的 `production` Environment。该 Environment 必须配置以下 secrets：
+带 `v` 前缀的 tag，或以这类 tag 为 ref 的人工触发，进入受保护的 `production` Environment。该 Environment 只允许 `v*` tag 部署并要求指定 reviewer 批准，且必须配置以下 secrets：
 
 - `KEYSTORE_BASE64`
 - `KEY_ALIAS`

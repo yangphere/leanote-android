@@ -7,15 +7,15 @@
 - [x] 确认本任务是现代化轨道唯一 `meta.depends_on: []` 的 ready 叶，并已由当前会话激活；不创建新任务或重复 `start`。
 - [x] 完成 PRD/设计/研究审计，明确平台、Photo Picker seam 与 Room/API/Compose/HTTPS 下游的所有权边界。
 - [x] 已确认首发只发布 APK，GitHub Actions 是唯一受支持 CI/发布入口，JDK 21 是仓库与 CI 的 Gradle 运行时基线；同时采用持久账本/启动清扫的 `abandoned` 策略，以及不在仓库保存 keystore、由 GitHub Actions `production` Environment 注入的签名策略。
-- [ ] 在目标 GitHub Actions runner 记录 `java -version`、`gradlew -version` 的 Launcher/Daemon JVM、`JAVA_HOME`、Android SDK 目录、platform 37、Build Tools、Wrapper、AGP 和依赖解析结果，确认 Launcher/Daemon 均为 JDK 21。
-- [x] 同步 `AGENTS.md`、移除 `.travis.yml` 并建立发布文档，使开发者入口与 JDK 21/SDK 37 基线一致；GitHub Actions `production` Environment、secret 注入和 APK 发布流程是唯一入口。workflow 的实际运行证据仍单独保持未关闭。
+- [x] GitHub Actions run `34733222402` 已记录 `java -version`、`gradlew -version` 的 Launcher/Daemon JVM、`JAVA_HOME`、Android SDK 目录、platform 37、Build Tools、Wrapper/Kotlin 和依赖解析结果；AGP 9.4.0 由同一提交的根 `build.gradle` 固定，Launcher/Daemon 均为 JDK 21。
+- [x] 同步 `AGENTS.md`、移除 `.travis.yml` 并建立发布文档，使开发者入口与 JDK 21/SDK 37 基线一致；GitHub Actions `production` Environment、secret 注入和 APK 发布流程是唯一入口。debug workflow 已实际运行，production 签名证据仍单独保持未关闭。
 
 ## 1. 构建链迁移
 
 - [x] 以官方兼容表和任务所有者决策记录 Gradle 9.6.0、AGP 9.4.0、JDK 21、Kotlin/Compose 2.3.21、KSP 2.3.11、Compose BOM 2026.08.00 和 Hilt 2.60.1 的选择理由。
 - [x] 按 Wrapper/JDK/AGP → AndroidX → Kotlin/Compose → ViewModel/Coroutines/Flow → Hilt 的顺序整理单一 `:app` 构建矩阵；删除失效 Support/JCenter/动态版本来源。
-- [ ] 在 JDK 21、SDK 37 runner 上逐阶段构建，确认没有通过降低 SDK、旧 Support Library 或 source-level fallback 掩盖失败。
-- [ ] 为 ButterKnife、DBFlow、Jetifier 和 `jdk.compiler` exports 记录退出条件；后续移除前不得把临时开关复制到新模块。
+- [x] 在 JDK 21、SDK 37 的本地与 GitHub runner 上完成构建，未通过降低 SDK、旧 Support Library 或 source-level fallback 掩盖失败。
+- [x] 已在 `research/version-matrix.md` 和平台 spec 记录 ButterKnife、DBFlow、Jetifier 和 `jdk.compiler` exports 的 AGP 10 前退出条件；后续移除前不得把临时开关复制到新模块。
 
 ## 2. 应用身份与发布门禁
 
@@ -40,29 +40,29 @@
 - [ ] 在真实 API 34+ 设备验证用户取消、URI/MIME 异常、后台复制、配置重建、结果确认一次和 View 销毁行为。
 - [x] 实现进程终止后未确认副本的持久账本、`abandoned` 状态、应用启动清扫、WorkManager 补偿和关系 owner 核对；未确认选择不恢复，用户重新选择，配置重建不触发清理。
 - [x] 为复制前、复制中、复制完成未确认、关系提交未确认四个进程终止窗口增加 JVM 回归测试；独立 JDK 21 编译运行的 20 个 Picker 核心/handler 测试通过。Android Gradle runner 与真实设备重放仍单独保持未关闭。
-- [ ] 将关系持久化、正文插入、Room 事务、服务器文件集合 reconciliation 和上传 MIME 验收交给对应下游任务，不在本任务形成第二套契约。
+- [x] 已在 PRD/design 将关系持久化、正文插入、Room 事务、服务器文件集合 reconciliation 和上传 MIME 验收交给对应下游任务，本任务未形成第二套契约。
 
 ## 5. 自动化验证与证据登记
 
 - [x] 历史受控环境曾运行 `testDebugUnitTest`、`lintDebug`、`assembleDebug` 并记录 API 34/36 AVD smoke；证据注明执行环境未知且不可替代当前 runner。
 - [x] 当前 Windows 本地 runner 已使用 JDK 21、SDK platform 37 与 Build Tools 36.0.0 完成 32 个 JVM 测试、`lintDebug`、debug 构建及 configuration-cache stored/reused；无签名 release 在 `verifyReleaseSigning` 失败且没有 release APK。该结果不替代下列 GitHub runner 与受保护签名门禁。
-- [ ] 在 JDK 21、SDK 37 GitHub Actions runner 运行：
-  - `.\gradlew.bat testDebugUnitTest --no-configuration-cache`
-  - `.\gradlew.bat lintDebug --no-configuration-cache`
-  - `.\gradlew.bat assembleDebug --no-configuration-cache`
-  - 再次 `.\gradlew.bat assembleDebug` 并记录 configuration cache reuse
+- [x] 在 JDK 21、SDK 37 GitHub Actions runner 运行（run `34733222402`）：
+  - `./gradlew testDebugUnitTest --no-configuration-cache`
+  - `./gradlew lintDebug --no-configuration-cache`
+  - `./gradlew assembleDebug --configuration-cache`
+  - 再次 `./gradlew assembleDebug --configuration-cache` 并记录 configuration cache reuse
 - [ ] 运行 `.\gradlew.bat assembleRelease` 的无签名 fail-closed 检查，以及受保护 GitHub Actions runner 的实际签名 APK 构建。
-- [ ] 运行 `git diff --check`、依赖/Manifest/凭据扫描；扫描结果按误报和生产命中逐项解释，不全局抑制 lint。
+- [x] 已运行 `git diff --check`、依赖/Manifest/凭据扫描；未发现受跟踪 keystore/Travis、HTTP/JCenter/动态版本、安装权限、Bugly upgrade activity、方向锁或旧 `android.support` import，lint 未全局抑制。
 - [ ] 验证 GitHub Actions 普通 PR 不注入 production secrets，受保护 tag/人工批准环境才可解码临时 keystore；成功和失败路径都清理临时文件且不向日志输出凭据。
 - [ ] 对最终 APK 执行 `zipalign -c -P 16 -v 4`，列出每个 `.so` 并检查 ELF `PT_LOAD` 对齐；在真实 16 KB page-size 目标运行验证。
-- [ ] 将每项结果记录为 `confirmed-current`、`verified`、`target-required` 或 `blocked`，包含命令、runner、设备、产物和未运行原因。
+- [x] 已将当前每项结果记录为 `confirmed-current`、`verified`、`target-required` 或 `blocked`，包含命令、runner、产物以及设备/签名/16 KB 未运行原因。
 
 ## 6. EVID 需求执行映射
 
 - [ ] `EVID-01`：提交唯一 GitHub Actions workflow，完成 PR 无 secrets 检查、受保护 release APK 发布、Travis 禁止发布和 APK SHA-256 登记。
-- [ ] `EVID-02`：提交 `SelectedImageStore` 持久账本/状态机/启动清扫/WorkManager 补偿，完成四个进程终止窗口、关系核对、配置重建和幂等性测试。
+- [x] `EVID-02`：已提交 `SelectedImageStore` 持久账本/状态机/启动清扫/WorkManager 补偿，四个进程终止窗口、关系核对、配置重建和幂等性测试已在 GitHub runner 通过。
 - [ ] `EVID-03`：移除仓库和 Travis 的加密 keystore 输入，接入 GitHub `production` Environment，完成临时文件清理、缺失 fail-closed、APK 签名指纹和访问控制验证。
-- [ ] `EVID-04`：在 JDK 21/SDK 37 runner 登记完整环境矩阵，完成测试、lint、两次 debug 构建和 configuration cache 验证。
+- [x] `EVID-04`：GitHub Actions run `34733222402` 已在 JDK 21/SDK 37 runner 登记环境矩阵，完成测试、lint、两次 debug 构建和 configuration cache stored/reused 验证。
 - [ ] `EVID-05`：在 API 34、API 35+ 导航模式和 API 36 大屏目标完成安装、系统栏/IME、窗口调整、Photo Picker 和 predictive-back 真实操作记录。
 - [ ] `EVID-06`：对最终签名 APK 完成 Manifest/依赖/动态库扫描、ZIP/ELF 16 KB 检查和真实 16 KB page-size 运行验证。
 
